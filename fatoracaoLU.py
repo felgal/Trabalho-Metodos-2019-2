@@ -18,9 +18,11 @@ def criaMatriz():
                 linhaAtual[k] = int(linhaAtual[k])
             matrizSistema.append(linhaAtual)
 
-        linhaAtual = entradalu.readline().split("/")
-        for k in range(0, len(linhaAtual)):
-            linhaAtual[k] = int(linhaAtual[k])
+        linhaAtual=entradalu.readline().strip('\n')
+        if(linhaAtual!="ID"):
+            linhaAtual = linhaAtual.split("/")
+            for k in range(0, len(linhaAtual)):
+                linhaAtual[k] = int(linhaAtual[k])
         matrizCoeficientes = linhaAtual
         #chama fatoraLU que realmente faz a fatoracao e retorna os resultados que serao salvos no arquivo de resultado
         determinante = achaDeterminante(matrizSistema,n)
@@ -32,10 +34,16 @@ def criaMatriz():
         salvaMatriz("RESUL","L:",solucao[0],n)
         #salva U no arquivo
         salvaMatriz("RESUL","U:",solucao[1],n)
-        #salva y no arquivo
-        salvaVetor("RESUL","Y:",solucao[2],n)
-        #salva x no arquivo
-        salvaVetor("RESUL","X:",solucao[3],n)
+        if(linhaAtual=="ID"):
+            #salva y no arquivo
+            salvaMatriz("RESUL","Y:",solucao[2],n)
+            #salva x no arquivo
+            salvaMatriz("RESUL","X:",solucao[3],n)
+        else:
+            #salva y no arquivo
+            salvaVetor("RESUL","Y:",solucao[2],n)
+            #salva x no arquivo
+            salvaVetor("RESUL","X:",solucao[3],n)
 
 
 
@@ -79,12 +87,26 @@ def fatoraLU(sist, coef,n):
 
     solucao.append(l)
     solucao.append(u)
+    if(coef=="ID"):
+        yf=[]
+        xf=[]
+        for i in range(0,n):
+            vet = [0]*n
+            vet[i] = 1
+            y = achaVarsL(l,vet)
+            yf.append(y)
+            x = achaVarsU(u,y)
+            xf.append(x)
+            solucao.append(yf)
+            solucao.append(xf)
+        x=xf
+        y=yf
+    else:
+        y = achaVarsL(l, coef)
+        solucao.append(y)
 
-    y = achaVarsL(l,coef)
-    solucao.append(y)
-
-    x = achaVarsU(u,y)
-    solucao.append(x)
+        x = achaVarsU(u, y)
+        solucao.append(x)
 
     print("Y:" + str(y))
     print("X:" + str(x))
@@ -112,8 +134,8 @@ def achaVarsU(vals,coefs):
     results[tamMax-1] = coefs[tamMax-1]/vals[tamMax-1][tamMax-1]
     for i in range(tamMax-2,-1,-1):
         results[i] = coefs[i]
-        for j in range(i,tamMax):
-            results[i]-= vals[j][j]*results[j]
+        for j in range(i+1,tamMax):
+            results[i]-= vals[i][j]*results[j]
         results[i]=results[i]/vals[i][i]
     return results
 
