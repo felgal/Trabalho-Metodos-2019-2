@@ -18,15 +18,16 @@ def criaMatriz():
                 linhaAtual[k] = int(linhaAtual[k])
             matrizSistema.append(linhaAtual)
 
-        linhaAtual=entradalu.readline().strip('\n')
-        if(linhaAtual!="ID"):
-            linhaAtual = linhaAtual.split("/")
-            for k in range(0, len(linhaAtual)):
-                linhaAtual[k] = int(linhaAtual[k])
-        matrizCoeficientes = linhaAtual
+
+        linhaAtual = []
+        for j in range(0,n):
+            linhaAtual.append(entradalu.readline().split("/"))
+            for k in range(0, len(linhaAtual[j])):
+                linhaAtual[j][k] = int(linhaAtual[j][k].strip("\n"))
+        matrizVars = linhaAtual
         #chama fatoraLU que realmente faz a fatoracao e retorna os resultados que serao salvos no arquivo de resultado
         determinante = achaDeterminante(matrizSistema,n)
-        solucao = fatoraLU(matrizSistema, matrizCoeficientes,n)
+        solucao = fatoraLU(matrizSistema, matrizVars,n)
         saidaluF = open("RESUL", 'a')
         saidaluF.write("\n\nDeterminante:" + str(determinante))
         saidaluF.close()
@@ -34,16 +35,10 @@ def criaMatriz():
         salvaMatriz("RESUL","L:",solucao[0],n)
         #salva U no arquivo
         salvaMatriz("RESUL","U:",solucao[1],n)
-        if(linhaAtual=="ID"):
-            #salva y no arquivo
-            salvaMatriz("RESUL","Y:",solucao[2],n)
-            #salva x no arquivo
-            salvaMatriz("RESUL","X:",solucao[3],n)
-        else:
-            #salva y no arquivo
-            salvaVetor("RESUL","Y:",solucao[2],n)
-            #salva x no arquivo
-            salvaVetor("RESUL","X:",solucao[3],n)
+        #salva y no arquivo
+        salvaMatriz("RESUL","Y:",solucao[2],n)
+        #salva x no arquivo
+        salvaMatriz("RESUL","X:",solucao[3],n)
 
 
 
@@ -68,15 +63,15 @@ def salvaMatriz(nomeArq,letra,matriz,n):
         saida.write(linhaAtual)
 
 #realmente realiza a fatoracao LU
-def fatoraLU(sist, coef,n):
+def fatoraLU(coef, vars,n):
     solucao = []
-    print("Sistema atual:" + str(sist))
-    print("Coeficientes atuais:" + str(coef))
+    print("Sistema atual:" + str(coef))
+    print("Coeficientes atuais:" + str(vars))
     #primeira etapa, achar L e U
     l = [[0 for x in range(n)] for y in range(n)]
     for i in range(0,n):
         l[i][i]=1
-    u = sist
+    u = coef
     for i in range(0,n-1):
         u = ajustaColuna(u,i)
         (l,u) = ajustaLinhas(l,u,i,n)
@@ -87,26 +82,17 @@ def fatoraLU(sist, coef,n):
 
     solucao.append(l)
     solucao.append(u)
-    if(coef=="ID"):
-        yf=[]
-        xf=[]
-        for i in range(0,n):
-            vet = [0]*n
-            vet[i] = 1
-            y = achaVarsL(l,vet)
-            yf.append(y)
-            x = achaVarsU(u,y)
-            xf.append(x)
-            solucao.append(yf)
-            solucao.append(xf)
-        x=xf
-        y=yf
-    else:
-        y = achaVarsL(l, coef)
-        solucao.append(y)
-
-        x = achaVarsU(u, y)
-        solucao.append(x)
+    yf=[]
+    xf=[]
+    for i in range(0,n):
+        y = achaVarsL(l,vars[i])
+        yf.append(y)
+        x = achaVarsU(u,y)
+        xf.append(x)
+        solucao.append(yf)
+        solucao.append(xf)
+    x=xf
+    y=yf
 
     print("Y:" + str(y))
     print("X:" + str(x))
